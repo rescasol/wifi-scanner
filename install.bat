@@ -7,7 +7,7 @@ echo      WiFi Scanner - Installacio
 echo =========================================
 echo.
 
-:: Comprovar que s'executa com a Administrador
+:: Comprovar Administrador
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     echo [AVIS] No s'esta executant com a Administrador.
@@ -35,20 +35,60 @@ echo [OK] Python %PYVER%
 :: 2/5 - nmap
 echo [2/5] Comprovant nmap...
 nmap --version >nul 2>&1
+if %errorLevel% equ 0 (
+    echo [OK] nmap trobat
+    goto :nmap_ok
+)
+
+echo [INFO] nmap no trobat. Installant automaticament...
+echo.
+
+:: Intent 1: winget (Windows 10/11 modern)
+winget --version >nul 2>&1
+if %errorLevel% equ 0 (
+    echo [INFO] Installant nmap via winget (pot trigar 1-2 minuts)...
+    winget install --id Insecure.Nmap --silent --accept-package-agreements --accept-source-agreements
+    if %errorLevel% equ 0 (
+        echo [OK] nmap installat via winget
+        goto :nmap_refresh
+    )
+    echo [INFO] winget fallat, provant descarrega directa...
+)
+
+:: Intent 2: descarregar installer directament amb PowerShell
+echo [INFO] Descarregant installer de nmap.org...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest -Uri 'https://nmap.org/dist/nmap-7.95-setup.exe' -OutFile '%TEMP%\nmap-setup.exe' -UseBasicParsing"
 if %errorLevel% neq 0 (
     echo.
-    echo [ERROR] nmap no trobat!
-    echo.
-    echo         Cal installar nmap + Npcap per detectar dispositius.
-    echo         Descarrega'l de: https://nmap.org/download.html
-    echo         Durant la installacio, marca "Install Npcap".
-    echo.
-    echo         Un cop installat nmap, torna a executar aquest fitxer.
+    echo [ERROR] No s'ha pogut descarregar nmap.
+    echo         Comprova la connexio a internet o installa'l manualment:
+    echo         https://nmap.org/download.html
+    echo         (marca "Install Npcap" durant la installacio)
     echo.
     pause
     exit /b 1
 )
-echo [OK] nmap trobat
+
+echo [INFO] Executant installer de nmap (segueix les instruccions en pantalla)...
+echo        Accepta totes les opcions per defecte i inclou Npcap.
+"%TEMP%\nmap-setup.exe"
+del "%TEMP%\nmap-setup.exe" >nul 2>&1
+
+:nmap_refresh
+:: Afegir nmap al PATH de la sessio actual
+set "NMAP_PATH=C:\Program Files (x86)\Nmap"
+if exist "%NMAP_PATH%\nmap.exe" set "PATH=%NMAP_PATH%;%PATH%"
+
+nmap --version >nul 2>&1
+if %errorLevel% neq 0 (
+    echo [AVIS] nmap installat pero no accessible en aquesta sessio.
+    echo        Tanca i obre una nova finestra d'administrador i torna a executar.
+    pause
+    exit /b 1
+)
+echo [OK] nmap installat correctament
+
+:nmap_ok
 
 :: 3/5 - Entorn virtual
 echo [3/5] Creant entorn virtual (.venv)...
@@ -67,7 +107,7 @@ if not exist ".venv\" (
 :: 4/5 - Paquets Python
 echo [4/5] Installant paquets Python...
 call .venv\Scripts\activate.bat
-pip install --upgrade pip --quiet
+python -m pip install --upgrade pip --quiet
 pip install -r requirements.txt --quiet
 if %errorLevel% neq 0 (
     echo [ERROR] Problema installant paquets. Comprova la connexio a internet.
@@ -81,7 +121,6 @@ echo [5/5] Configuracio...
 if not exist "config.yml" (
     copy config.example.yml config.yml >nul
     echo [OK] config.yml creat
-    echo      Edita'l amb: notepad config.yml
 ) else (
     echo [OK] config.yml ja existeix
 )
@@ -92,7 +131,9 @@ echo =========================================
 echo   Installacio completada correctament!
 echo =========================================
 echo.
-echo   1. Edita la configuracio:
+echo   Passos seguents:
+echo.
+echo   1. Edita la configuracio (xarxa + Telegram):
 echo        notepad config.yml
 echo.
 echo   2. Inicia el servidor (com a Administrador):
