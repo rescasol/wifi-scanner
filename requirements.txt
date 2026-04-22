@@ -3,3 +3,4 @@ PyYAML>=6.0
 requests>=2.31.0
 mac-vendor-lookup>=0.1.12
 rich>=13.0.0
+flask>=3.0.0

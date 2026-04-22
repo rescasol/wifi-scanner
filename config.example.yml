@@ -2,7 +2,8 @@
 # Copia aquest fitxer a config.yml i omple els valors
 
 # Rang de xarxa a escanejar
-# Troba el teu rang: ip route | grep -v default
+# Windows: obre cmd → ipconfig → busca la teva IP i adapta el rang
+# Linux/RPi: ip route | grep -v default
 # Exemples comuns: 192.168.1.0/24, 192.168.0.0/24, 10.0.0.0/24
 network: "192.168.1.0/24"
 

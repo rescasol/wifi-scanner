@@ -6,9 +6,21 @@ import time
 import argparse
 import sys
 import os
+import platform
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
+
+
+def is_admin() -> bool:
+    """Return True if the process has admin/root privileges."""
+    try:
+        if platform.system() == "Windows":
+            import ctypes
+            return bool(ctypes.windll.shell32.IsUserAnAdmin())
+        return os.geteuid() == 0
+    except Exception:
+        return False
 
 import nmap
 import yaml
@@ -114,15 +126,23 @@ def scan_network(network: str, aggressive: bool = False) -> list[dict]:
     # --script nbstat: NetBIOS hostnames on LAN
     # -O: OS detection (needs root, optional)
     args = "-sn --script nbstat"
-    if aggressive and os.geteuid() == 0:
+    if aggressive and is_admin():
         args += " -O"
 
+    scan_kwargs: dict = {"hosts": network, "arguments": args}
+    # sudo flag only works on Linux/macOS; skip on Windows
+    if platform.system() != "Windows" and not is_admin():
+        scan_kwargs["sudo"] = True
+
     try:
-        nm.scan(hosts=network, arguments=args, sudo=(os.geteuid() != 0))
+        nm.scan(**scan_kwargs)
     except nmap.PortScannerError as e:
         console.print(f"[red]Error nmap: {e}[/red]")
-        console.print("[yellow]Prova executar amb sudo per a millors resultats.[/yellow]")
-        sys.exit(1)
+        if platform.system() == "Windows":
+            console.print("[yellow]Executa el programa com a Administrador per a millors resultats.[/yellow]")
+        else:
+            console.print("[yellow]Prova executar amb sudo per a millors resultats.[/yellow]")
+        raise RuntimeError(str(e)) from e
 
     devices = []
     for host in nm.all_hosts():
