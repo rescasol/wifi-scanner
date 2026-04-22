@@ -1,0 +1,23 @@
+# User config (conté el token de Telegram — no pujar mai!)
+config.yml
+
+# Base de dades de dispositius
+devices.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+*.log

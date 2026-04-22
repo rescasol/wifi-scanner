@@ -1,0 +1,26 @@
+# ── WiFi Scanner - Configuració ──────────────────────────────────────────
+# Copia aquest fitxer a config.yml i omple els valors
+
+# Rang de xarxa a escanejar
+# Troba el teu rang: ip route | grep -v default
+# Exemples comuns: 192.168.1.0/24, 192.168.0.0/24, 10.0.0.0/24
+network: "192.168.1.0/24"
+
+# Interval en segons entre escanejos en mode monitor (per defecte: 60s)
+monitor_interval: 60
+
+# ── Telegram ──────────────────────────────────────────────────────────────
+# Per crear un bot Telegram:
+#   1. Obre Telegram i busca @BotFather
+#   2. Envia /newbot i segueix les instruccions
+#   3. Guarda el token que et dona
+#
+# Per obtenir el chat_id:
+#   1. Envia un missatge al teu bot
+#   2. Obre: https://api.telegram.org/bot<TOKEN>/getUpdates
+#   3. Busca "chat":{"id": XXXXXXXXX} — aquell número és el chat_id
+#      (també pot ser un grup: fica el bot al grup i busca el chat_id negatiu)
+
+telegram:
+  token: ""       # Ex: "123456789:ABCdefGHIjklMNOpqrSTUvwxYZ"
+  chat_id: ""     # Ex: "123456789"  o  "-1001234567890" per a grups
