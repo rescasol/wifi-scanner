@@ -3,11 +3,13 @@
 
 if not exist ".venv\" (
     echo Error: entorn virtual no trobat. Executa primer install.bat
-    pause & exit /b 1
+    pause
+    exit /b 1
 )
 if not exist "config.yml" (
     echo Error: config.yml no trobat. Copia config.example.yml a config.yml i configura'l.
-    pause & exit /b 1
+    pause
+    exit /b 1
 )
 
 echo Iniciant WiFi Scanner...
